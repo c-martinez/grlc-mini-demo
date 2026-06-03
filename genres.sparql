@@ -15,5 +15,5 @@ SELECT DISTINCT ?genreId ?genreName WHERE {
   ?genreId rdf:type dbo:Genre .
   ?genreId dbp:name ?genreName .
 
-  FILTER(LANG(?genrename) = "en").
+  FILTER(LANG(?genreName) = "en").
 } LIMIT 100
