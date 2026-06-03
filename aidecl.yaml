@@ -1,0 +1,24 @@
+# AI Declaration Format (aidecl)
+# Use a role or team name rather than personal name if this file will be public
+
+schema_version: 1.0.0
+project:
+  name: grlc-mini-demo
+  repository: git@github.com:c-martinez/grlc-mini-demo.git
+  content_type: software
+ai_usage:
+  used: true
+  summary: Used Claude to generate first draft of JavaScript calls, 
+    adjusted generated code afterwards
+  level: minimal
+  tools:
+  - name: Claude.ai
+    vendor: Anthropic
+    type: assistant
+    purpose:
+    - code completion
+  scope:
+    code_completion: true
+declaration:
+  date: '2026-06-03'
+  declared_by: Carlos Martinez
