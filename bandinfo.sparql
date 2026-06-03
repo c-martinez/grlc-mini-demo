@@ -1,0 +1,46 @@
+#+ defaults:
+#+   - bandId: http://dbpedia.org/resource/Blur_(band)
+#+ transform: {
+#+     "band": "?band$langTag:hide",
+#+     "description": "?description$langTag:hide",
+#+     "activeFrom": "?activeFrom",
+#+     "activeUntil": "?activeUntil",
+#+     "hometown": "?hometown$langTag:hide",
+#+     "album": "?album$langTag:hide",
+#+     "membername": "?membername$langTag:hide",
+#+     "$anchor": "band"
+#+ }
+
+PREFIX dbo: <http://dbpedia.org/ontology/>
+PREFIX dbp: <http://dbpedia.org/property/>
+PREFIX schema: <http://schema.org/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT ?band ?description ?activeFrom ?activeUntil ?hometown ?album $membername WHERE {
+  ?_bandId_iri dbp:name ?band .
+  ?_bandId_iri dbo:description ?description .
+
+  OPTIONAL{
+    ?_bandId_iri dbo:activeYearsStartYear ?activeFrom .
+  }
+  OPTIONAL{ 
+    ?_bandId_iri dbo:activeYearsEndYear ?activeUntil .
+  }
+
+  OPTIONAL {
+    ?_bandId_iri dbo:hometown ?hometown_id .
+    ?hometown_id foaf:name ?hometown . 
+  }
+
+  OPTIONAL {
+    ?album_id dbp:artist ?_bandId_iri .
+    ?album_id dbp:name ?album .
+  }
+
+  OPTIONAL {
+    ?_bandId_iri dbo:bandMember ?member_id.
+    ?member_id dbp:name ?membername . 
+  }
+
+  FILTER(LANG(?description) = "en").
+} LIMIT 100

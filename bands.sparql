@@ -1,0 +1,19 @@
+#+ summary: List bands in genre
+#+ defaults:
+#+   - genreId: http://dbpedia.org/resource/Alternative_rock
+#+ transform: {
+#+     "bandId": "?bandid",
+#+     "bandName": "?bandname$langTag:hide"
+#+ }
+
+PREFIX dbo: <http://dbpedia.org/ontology/>
+PREFIX dbp: <http://dbpedia.org/property/>
+PREFIX schema: <http://schema.org/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT DISTINCT ?bandid ?bandname WHERE {
+  ?bandid rdf:type dbo:Band .
+  ?bandid dbo:genre ?_genreId_iri .
+  ?bandid dbp:name ?bandname .
+  FILTER(LANG(?bandname) = "en") .
+} LIMIT 100
