@@ -1,0 +1,237 @@
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>grlc demo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+</head>
+<body>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
+
+<h2 class="sr-only"></h2>
+<div class="container"> 
+  <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom"> 
+    <span class="fs-4">Music Explorer - browse bands by genre</span>
+  </header>
+
+  <div class="mb-3">
+    <label for="genre-select">Genre</label>
+    <select id="genre-select">
+      <option value="">Loading genres...</option>
+    </select>
+  </div>
+
+  <div class="mb-3">
+    <label for="band-select">Band</label>
+    <select id="band-select" disabled>
+      <option value="">Select a genre first</option>
+    </select>
+  </div>
+
+  <div>
+    <div class="status-bar">
+      <span class="spinner" id="spinner"></span>
+      <span id="status-text"></span>
+    </div>
+
+    <div class="error-msg" id="error-msg" role="alert"></div>
+
+    <div id="band-display">
+      <div>
+        <i aria-hidden="true"></i>
+        <strong>No band selected</strong> Choose a genre and then a band to see details.
+      </div>
+    </div>    
+  </div>
+</div>
+
+<script>
+const GENRES_URL  = 'https://grlc.io/api-git/c-martinez/grlc-mini-demo/genres';
+const BANDS_URL   = 'https://grlc.io/api-git/c-martinez/grlc-mini-demo/bands';
+const DETAILS_URL = 'https://grlc.io/api-git/c-martinez/grlc-mini-demo/bandinfo';
+
+const genreSelect = document.getElementById('genre-select');
+const bandSelect  = document.getElementById('band-select');
+const statusText  = document.getElementById('status-text');
+const spinner     = document.getElementById('spinner');
+const errorMsg    = document.getElementById('error-msg');
+const bandDisplay = document.getElementById('band-display');
+
+function setLoading(msg) {
+  spinner.classList.add('active');
+  statusText.textContent = msg;
+}
+function clearLoading(msg = '') {
+  spinner.classList.remove('active');
+  statusText.textContent = msg;
+}
+function showError(msg) {
+  errorMsg.textContent = msg;
+  errorMsg.classList.add('visible');
+}
+function clearError() {
+  errorMsg.classList.remove('visible');
+}
+
+async function loadGenres() {
+  setLoading('Loading genres...');
+  clearError();
+  try {
+    const res = await fetch(GENRES_URL, {
+      headers: {
+        'Accept': 'application/json',
+      }
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const genres = await res.json();
+    genreSelect.innerHTML = '<option value="">select a genre...</option>';
+    genres.forEach(g => {
+      const opt = document.createElement('option');
+      opt.value = g.genreId;
+      opt.textContent = g.genreName;
+      genreSelect.appendChild(opt);
+    });
+
+    const opt = document.createElement('option');
+    opt.value = "http://dbpedia.org/resource/Alternative_rock";
+    opt.textContent = "Alternative Rock (seeded)";
+    genreSelect.appendChild(opt);
+
+    clearLoading();
+  } catch (e) {
+    genreSelect.innerHTML = '<option value="">Failed to load</option>';
+    showError('Could not load genres. Check the API endpoint and try refreshing.');
+    clearLoading();
+  }
+}
+
+async function loadBands(genreId) {
+  bandSelect.disabled = true;
+  bandSelect.innerHTML = '<option value="">Loading bands...</option>';
+  bandDisplay.innerHTML = '';
+  setLoading('Loading bands...');
+  clearError();
+  try {
+    const res = await fetch(`${BANDS_URL}?genreId=${encodeURIComponent(genreId)}`,{
+      headers: {
+        'Accept': 'application/json',
+      }
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const bands = await res.json();
+    bandSelect.innerHTML = '<option value="">Select a band...</option>';
+    bands.forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = b.bandId;
+      opt.textContent = b.bandName;
+      bandSelect.appendChild(opt);
+    });
+    bandSelect.disabled = false;
+    clearLoading(`${bands.length} band${bands.length !== 1 ? 's' : ''} found`);
+  } catch (e) {
+    bandSelect.innerHTML = '<option value="">Failed to load</option>';
+    showError('Could not load bands for this genre.');
+    clearLoading();
+  }
+}
+
+async function loadBandDetails(bandId) {
+  bandDisplay.innerHTML = '';
+  setLoading('Loading band info...');
+  clearError();
+  try {
+    const res = await fetch(`${DETAILS_URL}?bandId=${encodeURIComponent(bandId)}`, {
+      headers: {
+        'Accept': 'application/json',
+      }
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const band = Array.isArray(data) ? data[0] : data;
+    renderBandCard(band);
+    clearLoading();
+  } catch (e) {
+    showError('Could not load band details.');
+    clearLoading();
+    bandDisplay.innerHTML = `<div class="empty-state"><i class="ti ti-alert-circle" aria-hidden="true"></i><strong>Something went wrong</strong>Details could not be retrieved.</div>`;
+  }
+}
+
+function renderBandCard(band) {
+  const years = band.activeUntil
+    ? `${band.activeFrom} - ${band.activeUntil}`
+    : `${band.activeFrom} - present`;
+
+  const albums = Array.isArray(band.album) ? band.album : [];
+  const members = Array.isArray(band.membername) ? band.membername : [];
+
+  const card = document.createElement('div');
+  card.innerHTML = `
+        <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">${band.band}</h5>
+          <h6 class="card-subtitle mb-2 text-body-secondary">${band.description || ''}</h6>
+
+          <p class="card-text">
+            <span class="badge text-bg-primary">Active</span>${years}
+          </p>
+          <p class="card-text">
+            <span class="badge text-bg-primary">Hometown</span>${band.hometown}
+          </p>
+          <div class="row row-cols-1 row-cols-md-3 g-4">
+            <div class="col">
+              <div class="card">
+                <div class="card-header">
+                  Albums
+                </div>
+                <ul class="list-group list-group-flush">
+                  ${albums.length ? albums.map(a => `<li class="list-group-item">${a}</li>`).join('') : '<li class="list-group-item">No albums listed</li>'}
+                </ul>
+              </div>
+            </div>
+            <div class="col">
+              <div class="card">
+                <div class="card-header">
+                  Members
+                </div>
+                <ul class="list-group list-group-flush">
+                  ${members.length ? members.map(m => `<li class="list-group-item">${m}</li>`).join('') : '<li class="list-group-item">No members listed</li>'}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  `;
+
+  bandDisplay.appendChild(card);
+  requestAnimationFrame(() => card.classList.add('visible'));
+}
+
+genreSelect.addEventListener('change', () => {
+  const id = genreSelect.value;
+  bandDisplay.innerHTML = '';
+  clearError();
+  if (!id) {
+    bandSelect.innerHTML = '<option value="">Select a genre first</option>';
+    bandSelect.disabled = true;
+    clearLoading();
+    return;
+  }
+  loadBands(id);
+});
+
+bandSelect.addEventListener('change', () => {
+  const id = bandSelect.value;
+  clearError();
+  if (!id) { bandDisplay.innerHTML = ''; clearLoading(); return; }
+  loadBandDetails(id);
+});
+
+loadGenres();
+</script>
+</body>
+</html>
