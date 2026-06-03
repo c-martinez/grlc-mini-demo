@@ -1,0 +1,24 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Grlc mini demo
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - orcid: 'https://orcid.org/0000-0001-5565-7577'
+    given-names: Carlos
+    family-names: Martinez-Ortiz
+    affiliation: Netherlands eScience Center
+repository-code: 'https://github.com/c-martinez/grlc-mini-demo'
+url: >-
+  https://c-martinez.github.io/grlc-mini-demo/music_explorer.html
+abstract: Mini demo of a website built using a grlc-API.
+keywords:
+  - grlc
+  - linked-data
+license: Apache-2.0
+version: '1.0'
+date-released: '2026-06-03'
