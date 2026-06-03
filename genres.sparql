@@ -1,16 +1,19 @@
-#+ summary: List genre
+#+ summary: List music genres from DBpedia 
+#+ description: List music genres (in English) from DBpedia, returning genre name and id
+#+ endpoint: https://dbpedia.org/sparql
+#+ endpoint_in_url: False
 #+ transform: {
-#+     "genreId": "?genreid",
-#+     "genreName": "?genrename$langTag:hide"
+#+     "genreId": "?genreId",
+#+     "genreName": "?genreName$langTag:hide"
 #+ }
-
 
 PREFIX dbo: <http://dbpedia.org/ontology/>
 PREFIX dbp: <http://dbpedia.org/property/>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 
-SELECT DISTINCT ?genreid ?genrename WHERE {
-  ?genreid rdf:type dbo:Genre .
-  ?genreid dbp:name ?genrename .
+SELECT DISTINCT ?genreId ?genreName WHERE {
+  ?genreId rdf:type dbo:Genre .
+  ?genreId dbp:name ?genreName .
+
   FILTER(LANG(?genrename) = "en").
 } LIMIT 100

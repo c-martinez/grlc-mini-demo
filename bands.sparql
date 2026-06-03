@@ -1,9 +1,14 @@
-#+ summary: List bands in genre
-#+ defaults:
-#+   - genreId: http://dbpedia.org/resource/Alternative_rock
+#+ summary: List bands in a given genres from DBpedia 
+#+ description: List music bands (in English), returning band name and id
+#+ endpoint: https://dbpedia.org/sparql
+#+ endpoint_in_url: False
+#+ enumerate:
+#+   - genreId:
+#+     - http://dbpedia.org/resource/Rock_music
+#+     - http://dbpedia.org/resource/Alternative_rock
 #+ transform: {
-#+     "bandId": "?bandid",
-#+     "bandName": "?bandname$langTag:hide"
+#+     "bandId": "?bandId",
+#+     "bandName": "?bandName$langTag:hide"
 #+ }
 
 PREFIX dbo: <http://dbpedia.org/ontology/>
@@ -11,9 +16,10 @@ PREFIX dbp: <http://dbpedia.org/property/>
 PREFIX schema: <http://schema.org/>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 
-SELECT DISTINCT ?bandid ?bandname WHERE {
-  ?bandid rdf:type dbo:Band .
-  ?bandid dbo:genre ?_genreId_iri .
-  ?bandid dbp:name ?bandname .
-  FILTER(LANG(?bandname) = "en") .
+SELECT DISTINCT ?bandId ?bandName WHERE {
+  ?bandId rdf:type dbo:Band .
+  ?bandId dbo:genre ?_genreId_iri .
+  ?bandId dbp:name ?bandName .
+
+  FILTER(LANG(?bandName) = "en") .
 } LIMIT 100

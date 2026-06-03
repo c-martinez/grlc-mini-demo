@@ -1,5 +1,11 @@
-#+ defaults:
-#+   - bandId: http://dbpedia.org/resource/Blur_(band)
+#+ summary: List band information 
+#+ description: List music band information (in English), returning band name, 
+#+     description, active years, hometown, album and members
+#+ endpoint: https://dbpedia.org/sparql
+#+ endpoint_in_url: False
+#+ enumerate:
+#+   - bandId:
+#+     - http://dbpedia.org/resource/Blur_(band)
 #+ transform: {
 #+     "band": "?band$langTag:hide",
 #+     "description": "?description$langTag:hide",
